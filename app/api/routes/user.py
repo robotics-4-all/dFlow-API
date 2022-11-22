@@ -23,7 +23,6 @@ from app.services import auth_service
 
 
 router = APIRouter()
-a =10
 
 
 @router.post("/user",
