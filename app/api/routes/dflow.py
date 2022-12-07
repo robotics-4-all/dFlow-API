@@ -5,18 +5,33 @@ from typing import Optional, Dict
 import docker
 from app.api.dependencies.auth import get_current_active_user
 from app.api.dependencies.database import get_repository
+from app.db.repositories.dmodel import DModelRepository
 from app.db.repositories.user import UserRepository
-from app.models.profile import UserProfilePublic
-from app.models.token import AccessToken
-from app.models.user import UserCreate, UserInDB, UserPublic
+
+from app.models.user import UserInDB
+from app.models.dmodel import DModelInsert, DModelInDB, DModelPublic
+
+
 from app.services import dflow_service
-from fastapi import (APIRouter, Body, Depends, File, HTTPException, Path,
-                     UploadFile, status)
-from fastapi.security import OAuth2PasswordRequestForm
-from starlette.status import (HTTP_200_OK, HTTP_201_CREATED,
-                              HTTP_400_BAD_REQUEST, HTTP_401_UNAUTHORIZED,
-                              HTTP_404_NOT_FOUND,
-                              HTTP_422_UNPROCESSABLE_ENTITY)
+
+from fastapi import (
+    APIRouter,
+    Body,
+    Depends,
+    File,
+    HTTPException,
+    Path,
+    UploadFile,
+    status
+)
+from starlette.status import (
+    HTTP_200_OK,
+    HTTP_201_CREATED,
+    HTTP_400_BAD_REQUEST,
+    HTTP_401_UNAUTHORIZED,
+    HTTP_404_NOT_FOUND,
+    HTTP_422_UNPROCESSABLE_ENTITY
+)
 from fastapi.responses import FileResponse
 
 
@@ -87,3 +102,37 @@ async def gen_from_file(
     return FileResponse(tarball_path,
                         filename=os.path.basename(tarball_path),
                         media_type='application/x-tar')
+
+
+@router.post("/model",
+             # response_class=Dict,
+             name="model:store_model",
+             status_code=HTTP_201_CREATED
+             )
+async def store_model(
+    model_file: UploadFile = File(...),
+    current_user: UserInDB = Depends(get_current_active_user)
+    ):
+    fd = model_file.file
+    model_raw = dflow_service.unpack_model_from_file(fd)
+    user_id = current_user.id
+    print(user_id)
+    print(model_raw)
+
+    return 501
+#
+#
+# @router.get("/model/{id}",
+#             response_class=Dict,
+#             name="model:get_model_by_id",
+#             status_code=HTTP_200_OK
+#             )
+# async def get_model_by_id(
+#     id: str,
+#     current_user: UserInDB = Depends(get_current_active_user)
+#     ):
+#     print(f'Generate for request: file=<{model_file.filename}>,' + \
+#           f' descriptor=<{model_file.file}>')
+#     fd = model_file.file
+#
+#     return 501

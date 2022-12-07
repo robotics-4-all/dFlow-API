@@ -54,6 +54,10 @@ class DflowService:
         )
         with open(model_path, 'w') as f:
             f.write(fd.read().decode('utf8'))
-        outdir = codegen(model_path)
+        out_dir = codegen(model_path)
         self.make_tarball(tarball_path, out_dir)
         return tarball_path
+
+    def unpack_model_from_file(self, fd):
+        return fd.read().decode('utf8')
+

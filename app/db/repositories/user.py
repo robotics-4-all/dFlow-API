@@ -56,7 +56,9 @@ class UserRepository(BaseRepository):
                                    username: str,
                                    populate: bool = True) -> UserInDB:
         user_record = await self.db.fetch_one(
-            query=GET_USER_BY_USERNAME_QUERY, values={"username": username})
+            query=GET_USER_BY_USERNAME_QUERY,
+            values={"username": username}
+        )
 
         if user_record:
             user = UserInDB(**user_record)
