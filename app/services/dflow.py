@@ -54,7 +54,7 @@ class DflowService:
         )
         with open(model_path, 'w') as f:
             f.write(fd.read().decode('utf8'))
-        out_dir = codegen(model_path)
+        out_dir = codegen(model_path, output_path=gen_path)
         self.make_tarball(tarball_path, out_dir)
         return tarball_path
 
