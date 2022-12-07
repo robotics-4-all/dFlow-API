@@ -9,6 +9,12 @@ ADD_MODEL_FOR_USER_QUERY = """
     RETURNING id, raw, user_id, created_at, updated_at;
 """
 
+GET_MODEL_BY_ID_QUERY = """
+    SELECT id, raw, user_id, created_at, updated_at
+    FROM models
+    WHERE id = :id;
+"""
+
 GET_MODEL_BY_USER_ID_QUERY = """
     SELECT id, raw, user_id, created_at, updated_at
     FROM models
@@ -34,13 +40,26 @@ class DModelRepository(BaseRepository):
                                  user_id: str,
                                  model_raw: str
                                  ) -> DModelInDB:
-        m = DModelInDB(user_id=user_id, raw=model_raw)
+        m = DModelInsert(user_id=user_id, raw=model_raw)
         dmodel = await self.db.fetch_one(
             query=ADD_MODEL_FOR_USER_QUERY,
-            values=dmodel.dict()
+            values=m.dict()
         )
 
-        return dbmodel
+        return dmodel
+
+    async def get_model_by_id(self,
+                              *,
+                              model_id: int) -> DModelInDB:
+        dmodel = await self.db.fetch_one(
+            query=GET_MODEL_BY_ID_QUERY,
+            values={"id": model_id}
+        )
+
+        if not dmodel:
+            return None
+
+        return DModelInDB(**dmodel)
 
     async def get_model_by_user_id(self,
                                    *,

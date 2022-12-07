@@ -110,29 +110,62 @@ async def gen_from_file(
              status_code=HTTP_201_CREATED
              )
 async def store_model(
+    dmodel_repo: DModelRepository = Depends(get_repository(DModelRepository)),
     model_file: UploadFile = File(...),
     current_user: UserInDB = Depends(get_current_active_user)
     ):
     fd = model_file.file
     model_raw = dflow_service.unpack_model_from_file(fd)
     user_id = current_user.id
-    print(user_id)
-    print(model_raw)
+    dmodel = await dmodel_repo.add_model_for_user(user_id=user_id, model_raw=model_raw)
+    if not dmodel:
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail="User profile does not exist",
+        )
 
-    return 501
-#
-#
-# @router.get("/model/{id}",
-#             response_class=Dict,
-#             name="model:get_model_by_id",
-#             status_code=HTTP_200_OK
-#             )
-# async def get_model_by_id(
-#     id: str,
-#     current_user: UserInDB = Depends(get_current_active_user)
-#     ):
-#     print(f'Generate for request: file=<{model_file.filename}>,' + \
-#           f' descriptor=<{model_file.file}>')
-#     fd = model_file.file
-#
-#     return 501
+
+@router.get("/model/{model_id}",
+            # response_class=DModelPublic,
+            name="model:get_model_by_id",
+            status_code=HTTP_200_OK
+            )
+async def get_model_by_id(
+    model_id: int,
+    dmodel_repo: DModelRepository = Depends(get_repository(DModelRepository)),
+    current_user: UserInDB = Depends(get_current_active_user)
+    ) -> DModelPublic:
+
+    dmodel = await dmodel_repo.get_model_by_id(model_id=model_id)
+    if not dmodel:
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail="User profile does not exist",
+        )
+    # print(dmodel)
+    resp = DModelPublic(**dmodel.dict())
+    print(resp)
+    return resp
+
+
+@router.get("/model/{model_id}/file",
+            response_class=FileResponse,
+            name="model:get_model_by_id",
+            status_code=HTTP_200_OK
+            )
+async def get_model_file_by_id(
+    model_id: int,
+    dmodel_repo: DModelRepository = Depends(get_repository(DModelRepository)),
+    current_user: UserInDB = Depends(get_current_active_user)
+    ) -> FileResponse:
+
+    dmodel = await dmodel_repo.get_model_by_id(model_id=model_id)
+    if not dmodel:
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail="",
+        )
+    model_file = dflow_service.store_model_file_tmp(dmodel.raw, dmodel.id)
+
+    return FileResponse(model_file,
+                        filename=os.path.basename(model_file))

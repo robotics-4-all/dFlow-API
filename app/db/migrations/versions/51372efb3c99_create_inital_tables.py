@@ -1,8 +1,8 @@
-"""create_main_tables
+"""create inital tables
 
-Revision ID: 098f1861e0b3
-Revises: 
-Create Date: 2022-11-17 20:13:38.480488
+Revision ID: 51372efb3c99
+Revises:
+Create Date: 2022-12-07 16:01:39.952660
 
 """
 from typing import Tuple
@@ -11,7 +11,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic
-revision = '098f1861e0b3'
+revision = '51372efb3c99'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -97,13 +97,35 @@ def create_profiles_table() -> None:
     )
 
 
+def create_models_table() -> None:
+    op.create_table(
+        "models",
+        sa.Column("id", sa.Integer, primary_key=True),
+        sa.Column("raw", sa.Text, nullable=True),
+        sa.Column("user_id", sa.Integer, sa.ForeignKey("users.id",
+                                                       ondelete="CASCADE")),
+        *timestamps(),
+    )
+    op.execute(
+        """
+        CREATE TRIGGER update_models_modtime
+            BEFORE UPDATE
+            ON models
+            FOR EACH ROW
+        EXECUTE PROCEDURE update_updated_at_column();
+        """
+    )
+
+
 def upgrade() -> None:
     create_updated_at_trigger()
     create_users_table()
     create_profiles_table()
+    create_models_table()
 
 
 def downgrade() -> None:
     op.drop_table("profiles")
     op.drop_table("users")
+    op.drop_table("models")
     op.execute("DROP FUNCTION update_updated_at_column")

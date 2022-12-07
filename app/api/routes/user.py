@@ -103,5 +103,4 @@ async def get_user_profile(
             detail="User profile does not exist",
         )
     up = UserProfilePublic(**profile.dict())
-    print(up)
     return up

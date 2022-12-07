@@ -14,7 +14,6 @@ class Dflow(BaseException):
 class DflowService:
     TMP_DIR = '/tmp/dflow'
 
-
     def __init__(self):
         if not os.path.exists(DflowService.TMP_DIR):
             os.mkdir(DflowService.TMP_DIR)
@@ -60,4 +59,14 @@ class DflowService:
 
     def unpack_model_from_file(self, fd):
         return fd.read().decode('utf8')
+
+    def store_model_file_tmp(self, model_raw, model_id):
+        gen_path = os.path.join(
+            DflowService.TMP_DIR,
+            f'dmodel-{model_id}.dflow'
+        )
+        with open(gen_path, 'w') as f:
+            f.write(model_raw)
+        return gen_path
+
 
