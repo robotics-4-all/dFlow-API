@@ -46,6 +46,11 @@ GET_LAST_MODEL_FOR_USER_QUERY = """
     ORDER BY (updated_at) DESC LIMIT 1;
 """
 
+DELETE_MODEL_BY_ID_QUERY = """
+    DELETE FROM models
+    WHERE id = :model_id;
+"""
+
 
 class DModelRepository(BaseRepository):
     async def add_model_for_user(self,
@@ -95,3 +100,12 @@ class DModelRepository(BaseRepository):
         if dmodel:
             return DModelInDB(**dmodel)
         return dmodel
+
+    async def delete_model_by_id(self,
+                                 *,
+                                 model_id: int) -> DModelInDB:
+        resp = await self.db.fetch_one(
+            query=DELETE_MODEL_BY_ID_QUERY,
+            values={"model_id": model_id}
+        )
+        return resp

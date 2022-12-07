@@ -147,6 +147,19 @@ async def get_model_by_id(
     print(resp)
     return resp
 
+@router.delete("/model/{model_id}",
+               # response_class=DModelPublic,
+               name="model:delete_model_by_id",
+               status_code=HTTP_200_OK
+               )
+async def delete_model_by_id(
+    model_id: int,
+    dmodel_repo: DModelRepository = Depends(get_repository(DModelRepository)),
+    current_user: UserInDB = Depends(get_current_active_user)
+    ):
+    dmodel = await dmodel_repo.delete_model_by_id(model_id=model_id)
+    return 200
+
 
 @router.get("/model/{model_id}/file",
             response_class=FileResponse,
