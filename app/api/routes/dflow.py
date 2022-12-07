@@ -169,3 +169,24 @@ async def get_model_file_by_id(
 
     return FileResponse(model_file,
                         filename=os.path.basename(model_file))
+
+
+@router.get("/user/{username}/model/last",
+            # response_class=DModelPublic,
+            name="model:get_last_model_for_user",
+            status_code=HTTP_200_OK
+            )
+async def get_last_model_for_user(
+    username: str = Path(..., min_length=3, regex="^[a-zA-Z0-9_-]+$"),
+    dmodel_repo: DModelRepository = Depends(get_repository(DModelRepository)),
+    current_user: UserInDB = Depends(get_current_active_user)
+    ) -> DModelPublic:
+
+    dmodel = await dmodel_repo.get_last_model_for_user(username=username)
+    if not dmodel:
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail="Model does not exist",
+        )
+    print(dmodel)
+    # return resp
