@@ -13,8 +13,8 @@ services:
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-Dfl0w}
       # - POSTGRES_PORT=${POSTGRES_PORT:-5432}
       # - POSTGRES_DB=${POSTGRES_DB:-postgres}
-    ports:
-      - 5432:5432
+    # ports:
+    #   - 5432:5432
     networks:
       - dflow_net
     restart: unless-stopped
@@ -28,6 +28,8 @@ services:
     image: dflow-api:0.1.0
     expose:
       - 8000
+    ports:
+      - 8000:8000
     environment:
       - SECRET_KEY=${SECRET_KEY:-Dfl0w}
       - POSTGRES_USER=${POSTGRES_USER:-postgres}
