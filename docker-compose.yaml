@@ -5,36 +5,43 @@ services:
 
   postgres:
     image: postgres:13-alpine
-    container_name: postgres
+    container_name: dflow-postgres
     volumes:
       - vol-postgres-data:/var/lib/postgresql/data/
-    env_file:
-      - .db.env
     environment:
-      - SECRET_KEY=${SECRET_KEY:-Dfl0w}
-      - POSTGRES_USER=${POSTGRES_USER:-dflow}
-      - POSTGRES_PASSWORD=${POSTGRES_USER:-Dfl0w}
-      - POSTGRES_SERVER=${POSTGRES_SERVER:-postgres}
-      - POSTGRES_PORT=${POSTGRES_PORT:-5432}
-      - POSTGRES_DB=${POSTGRES_DB:-dflow}
-    ports:
-      - 5432:5432
+      - POSTGRES_USER=${POSTGRES_USER:-postgres}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-Dfl0w}
+      # - POSTGRES_PORT=${POSTGRES_PORT:-5432}
+      # - POSTGRES_DB=${POSTGRES_DB:-postgres}
+    # ports:
+    #   - 5432:5432
     networks:
       - dflow_net
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   dflow-api:
-    image: dflow-api:latest
+    image: dflow-api:0.1.0
+    container_name: dflow-api
+    expose:
+      - 8000
+    ports:
+      - 8000:8000
     environment:
       - SECRET_KEY=${SECRET_KEY:-Dfl0w}
-      - POSTGRES_USER=${POSTGRES_USER:-dflow}
-      - POSTGRES_PASSWORD=${POSTGRES_USER:-Dfl0w}
-      - POSTGRES_SERVER=${POSTGRES_SERVER:-postgres}
+      - POSTGRES_USER=${POSTGRES_USER:-postgres}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-Dfl0w}
+      - POSTGRES_SERVER=${POSTGRES_SERVER:-dflow-postgres}
       - POSTGRES_PORT=${POSTGRES_PORT:-5432}
-      - POSTGRES_DB=${POSTGRES_DB:-dflow}
+      - POSTGRES_DB=${POSTGRES_DB:-postgres}
     networks:
-      - platform_net
+      - dflow_net
     restart: unless-stopped
+    command: ["uvicorn", "app.api.server:app", "--reload", "--workers", "1", "--host", "0.0.0.0", "--port", "8000"]
 
 networks:
   dflow_net:

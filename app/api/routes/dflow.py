@@ -2,7 +2,6 @@ import base64
 import os
 from typing import Optional, Dict
 
-import docker
 from app.api.dependencies.auth import get_current_active_user
 from app.api.dependencies.database import get_repository
 from app.db.repositories.dmodel import DModelRepository
