@@ -69,4 +69,39 @@ class DflowService:
             f.write(model_raw)
         return gen_path
 
+    def merge(self, source_files, model_id):
+        sections = ['entities', 'synonyms', 'gslots', 'triggers', 'dialogues', 'eservices']
+        merged_strings = {k: '' for k in sections}
 
+        for fd in source_files:
+            data = self.unpack_model_from_file(fd)
+
+            # Use list os sections to find keywords in file
+            indexes = []
+            for section in sections:
+                i = data.find(section)
+                indexes.append(i)
+            # Sort sections based on appearance in file
+            indexes, sections = zip(*sorted(zip(indexes, sections)))
+
+            # Extract each section in reverse order
+            for i in reversed(range(len(indexes))):
+                ind = indexes[i]
+                # ind == -1 if keyword doesn't exist in data
+                if ind >= 0:
+                    part = data[ind:]
+                    data = data[:ind]
+                    end_i = part.rfind('end')
+                    merged_strings[sections[i]] += part[len(sections[i]):end_i]
+
+        # Add section name the begining and 'end' in the end of each section
+        for section in merged_strings:
+            merged_strings[section] = section + merged_strings[section] + '\nend'
+
+        gen_path = os.path.join(
+            DflowService.TMP_DIR,
+            f'dmodel-{model_id}.dflow'
+        )
+        with open(gen_path, 'w') as f:
+            f.write(merged_strings)
+        return gen_path
