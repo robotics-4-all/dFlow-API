@@ -40,7 +40,7 @@ router = APIRouter()
 @router.post("/validation/file",
              response_model=Dict,
              name="validation:validate_mode_file",
-             status_code=HTTP_201_CREATED
+             status_code=HTTP_200_OK
              )
 async def validate_model_file(
     model_file: UploadFile = File(...),
@@ -64,31 +64,30 @@ async def validate_model_file(
 @router.post("/validation/b64",
              response_model=Dict,
              name="validation:validate_model_b64",
-             status_code=HTTP_201_CREATED
+             status_code=HTTP_200_OK
              )
 async def validate_model_b64(
     fenc: str = '',
     current_user: UserInDB = Depends(get_current_active_user)
     ):
-    if len(fenc) == 0:
-        return 404
     resp = {
         'status': 200,
         'message': ''
     }
     fdec = base64.b64decode(fenc)
     try:
-        dflow_service.validate_model(fdec)
+        dflow_service.validate_model_b64(fdec)
     except Exception as e:
         resp['status'] = 404
-        resp['message'] = e
+        resp['message'] = str(e)
+        print(e)
     return resp
 
 
 @router.post("/codegen/file",
              response_class=FileResponse,
              name="codegen:gen_from_file",
-             status_code=HTTP_201_CREATED
+             status_code=HTTP_200_OK
              )
 async def gen_from_file(
     model_file: UploadFile = File(...),

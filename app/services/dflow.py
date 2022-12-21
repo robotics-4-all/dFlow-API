@@ -29,13 +29,23 @@ class DflowService:
             f.write(fd.read().decode('utf8'))
         model, _ = build_model(fpath)
 
+    def validate_model_b64(self, model_b64):
+        u_id = uuid.uuid4().hex[0:8]
+        fpath = os.path.join(
+            DflowService.TMP_DIR,
+            f'model_for_validation-{u_id}.dflow'
+        )
+        with open(fpath, 'wb') as f:
+            f.write(model_b64)
+        model, _ = build_model(fpath)
+
     def run_subprocess(self, exec_path):
         pid = subprocess.Popen(['python3', exec_path], close_fds=True)
         return pid
 
     def make_tarball(self, fout, source_dir):
         with tarfile.open(fout, "w:gz") as tar:
-            tar.add(source_dir, arcname=os.path.basename(source_dir))
+            tar.add(source_dr, arcname=os.path.basename(source_dir))
 
     def generate(self, fd):
         u_id = uuid.uuid4().hex[0:8]
