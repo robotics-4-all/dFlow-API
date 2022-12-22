@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List
 
 from pydantic import EmailStr
 from fastapi import HTTPException, status
@@ -29,12 +29,36 @@ REGISTER_NEW_USER_QUERY = """
     RETURNING id, username, email, email_verified, password, salt, is_active, is_superuser, created_at, updated_at;
 """
 
+GET_USERS = """
+    SELECT id,
+           username,
+           email,
+           email_verified,
+           password,
+           salt,
+           is_active,
+           is_superuser,
+           created_at,
+           updated_at
+    FROM users
+"""
+
 
 class UserRepository(BaseRepository):
     def __init__(self, db: Database) -> None:
         super().__init__(db)
         self.auth_service = auth_service
         self.profiles_repo = UserProfileRepository(db)
+
+    async def get_users(self,
+                        *,
+                        populate: bool = True) -> List[UserInDB]:
+        users = await self.db.fetch_all(
+            query=GET_USERS,
+            values={}
+        )
+        return users
+
 
     async def get_user_by_email(self,
                                 *,

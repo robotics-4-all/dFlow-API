@@ -127,7 +127,7 @@ async def gen_model_b64(
 @router.post("/model",
              # response_class=Dict,
              name="model:store_model",
-             status_code=HTTP_201_CREATED
+             status_code=HTTP_200_OK
              )
 async def store_model(
     dmodel_repo: DModelRepository = Depends(get_repository(DModelRepository)),
@@ -155,7 +155,6 @@ async def get_model_by_id(
     dmodel_repo: DModelRepository = Depends(get_repository(DModelRepository)),
     current_user: UserInDB = Depends(get_current_active_user)
     ) -> DModelPublic:
-
     dmodel = await dmodel_repo.get_model_by_id(model_id=model_id)
     if not dmodel:
         raise HTTPException(
@@ -165,6 +164,36 @@ async def get_model_by_id(
     # print(dmodel)
     resp = DModelPublic(**dmodel.dict())
     return resp
+
+
+@router.get("/merge",
+            response_class=FileResponse,
+            name="model:merge_models",
+            status_code=HTTP_200_OK
+            )
+async def merge_models(
+    user_repo: UserRepository = Depends(get_repository(UserRepository)),
+    dmodel_repo: DModelRepository = Depends(get_repository(DModelRepository)),
+    current_user: UserInDB = Depends(get_current_active_user)
+    ) -> FileResponse:
+    users = await user_repo.get_users()
+    models = []
+    for user in users:
+        username = dict(user.items())['username']
+        dmodel = await dmodel_repo.get_last_model_for_user(username=username)
+        if dmodel is not None:
+            models.append(dmodel)
+    merged_model = dflow_service.merge(models)
+    if not len(models):
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail="Model storage is empty!",
+        )
+    return FileResponse(
+        merged_model,
+        filename=os.path.basename(merged_model)
+    )
+
 
 @router.delete("/model/{model_id}",
                # response_class=DModelPublic,

@@ -2,6 +2,7 @@ import subprocess
 import tarfile
 import uuid
 import os
+from typing import List, Any
 
 from dflow.utils import build_model
 from dflow.generator import codegen
@@ -99,13 +100,19 @@ class DflowService:
             f.write(model_raw)
         return gen_path
 
-    def merge(self, source_files, model_id):
-        sections = ['entities', 'synonyms', 'gslots', 'triggers', 'dialogues', 'eservices']
+    def merge(self, models: List[Any]):
+        sections = [
+            'entities',
+            'synonyms',
+            'gslots',
+            'triggers',
+            'dialogues',
+            'eservices'
+        ]
         merged_strings = {k: '' for k in sections}
 
-        for fd in source_files:
-            data = self.unpack_model_from_file(fd)
-
+        for model in models:
+            data = model.raw
             # Use list os sections to find keywords in file
             indexes = []
             for section in sections:
@@ -127,11 +134,20 @@ class DflowService:
         # Add section name the begining and 'end' in the end of each section
         for section in merged_strings:
             merged_strings[section] = section + merged_strings[section] + '\nend'
+        merged_str = '\n\n'.join([
+            merged_strings['gslots'],
+            merged_strings['entities'],
+            merged_strings['synonyms'],
+            merged_strings['triggers'],
+            merged_strings['eservices'],
+            merged_strings['dialogues'],
+        ])
 
+        u_id = uuid.uuid4().hex[0:8]
         gen_path = os.path.join(
             DflowService.TMP_DIR,
-            f'dmodel-{model_id}.dflow'
+            f'model-merged-{u_id}.dflow'
         )
         with open(gen_path, 'w') as f:
-            f.write(merged_strings)
+            f.write(merged_str)
         return gen_path

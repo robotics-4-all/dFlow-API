@@ -46,6 +46,18 @@ GET_LAST_MODEL_FOR_USER_QUERY = """
     ORDER BY (updated_at) DESC LIMIT 1;
 """
 
+GET_LAST_MODEL_FOR_ALL_USERS_QUERY = """
+    SELECT m.id,
+           raw,
+           user_id,
+           m.created_at,
+           m.updated_at
+    FROM models m
+        INNER JOIN users u
+        ON m.user_id = u.id
+    ORDER BY (updated_at);
+"""
+
 DELETE_MODEL_BY_ID_QUERY = """
     DELETE FROM models
     WHERE id = :model_id;
@@ -84,7 +96,8 @@ class DModelRepository(BaseRepository):
                                   username: str) -> DModelInDB:
         dmodel = await self.db.fetch_one(
             query=GET_MODEL_BY_USERNAME_QUERY,
-            values={"username": username})
+            values={"username": username}
+        )
 
         if dmodel:
             return DModelInDB(**dmodel)
@@ -95,11 +108,22 @@ class DModelRepository(BaseRepository):
                                       username: str) -> DModelInDB:
         dmodel = await self.db.fetch_one(
             query=GET_LAST_MODEL_FOR_USER_QUERY,
-            values={"username": username})
+            values={"username": username}
+        )
 
         if dmodel:
             return DModelInDB(**dmodel)
         return dmodel
+
+    async def get_last_model_for_users(self) -> DModelInDB:
+        dmodels = await self.db.fetch_all(
+            query=GET_LAST_MODEL_FOR_ALL_USERS_QUERY,
+            values={}
+        )
+
+        # if dmodels:
+        #     return DModelInDB(**dmodel)
+        return dmodels
 
     async def delete_model_by_id(self,
                                  *,
