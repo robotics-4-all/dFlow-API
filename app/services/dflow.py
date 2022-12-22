@@ -45,7 +45,7 @@ class DflowService:
 
     def make_tarball(self, fout, source_dir):
         with tarfile.open(fout, "w:gz") as tar:
-            tar.add(source_dr, arcname=os.path.basename(source_dir))
+            tar.add(source_dir, arcname=os.path.basename(source_dir))
 
     def generate(self, fd):
         u_id = uuid.uuid4().hex[0:8]
@@ -63,6 +63,26 @@ class DflowService:
         )
         with open(model_path, 'w') as f:
             f.write(fd.read().decode('utf8'))
+        out_dir = codegen(model_path, output_path=gen_path)
+        self.make_tarball(tarball_path, out_dir)
+        return tarball_path
+
+    def generate_b64(self, model_b64):
+        u_id = uuid.uuid4().hex[0:8]
+        model_path = os.path.join(
+            DflowService.TMP_DIR,
+            f'model-{u_id}.dflow'
+        )
+        tarball_path = os.path.join(
+            DflowService.TMP_DIR,
+            f'{u_id}.tar.gz'
+        )
+        gen_path = os.path.join(
+            DflowService.TMP_DIR,
+            f'gen-{u_id}'
+        )
+        with open(model_path, 'wb') as f:
+            f.write(model_b64)
         out_dir = codegen(model_path, output_path=gen_path)
         self.make_tarball(tarball_path, out_dir)
         return tarball_path

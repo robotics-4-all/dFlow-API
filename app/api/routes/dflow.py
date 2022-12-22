@@ -102,6 +102,28 @@ async def gen_from_file(
                         media_type='application/x-tar')
 
 
+@router.post("/codegen/b64",
+             response_class=FileResponse,
+             name="codegen:gen_model_b64",
+             status_code=HTTP_200_OK
+             )
+async def gen_model_b64(
+    fenc: str = '',
+    current_user: UserInDB = Depends(get_current_active_user)
+    ):
+    fdec = base64.b64decode(fenc)
+    try:
+        tarball_path = dflow_service.generate_b64(fdec)
+    except Exception as e:
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail=f"{str(e)}",
+        )
+    return FileResponse(tarball_path,
+                        filename=os.path.basename(tarball_path),
+                        media_type='application/x-tar')
+
+
 @router.post("/model",
              # response_class=Dict,
              name="model:store_model",
@@ -142,7 +164,6 @@ async def get_model_by_id(
         )
     # print(dmodel)
     resp = DModelPublic(**dmodel.dict())
-    print(resp)
     return resp
 
 @router.delete("/model/{model_id}",
