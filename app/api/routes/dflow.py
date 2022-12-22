@@ -145,6 +145,26 @@ async def store_model(
         )
 
 
+@router.post("/model/b64",
+             # response_class=Dict,
+             name="model:store_model_b64",
+             status_code=HTTP_200_OK
+             )
+async def store_model_b64(
+    fenc: str = '',
+    dmodel_repo: DModelRepository = Depends(get_repository(DModelRepository)),
+    current_user: UserInDB = Depends(get_current_active_user)
+    ):
+    model_raw = base64.b64decode(fenc)
+    user_id = current_user.id
+    dmodel = await dmodel_repo.add_model_for_user(user_id=user_id, model_raw=model_raw)
+    if not dmodel:
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail="User profile does not exist",
+        )
+
+
 @router.get("/model/{model_id}",
             # response_class=DModelPublic,
             name="model:get_model_by_id",
