@@ -137,7 +137,8 @@ async def store_model(
     fd = model_file.file
     model_raw = dflow_service.unpack_model_from_file(fd)
     user_id = current_user.id
-    dmodel = await dmodel_repo.add_model_for_user(user_id=user_id, model_raw=model_raw)
+    dmodel = await dmodel_repo.add_model_for_user(user_id=user_id,
+                                                  model_raw=model_raw)
     if not dmodel:
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,
@@ -157,7 +158,8 @@ async def store_model_b64(
     ):
     model_raw = base64.b64decode(fenc)
     user_id = current_user.id
-    dmodel = await dmodel_repo.add_model_for_user(user_id=user_id, model_raw=model_raw)
+    dmodel = await dmodel_repo.add_model_for_user(user_id=user_id,
+                                                  model_raw=model_raw)
     if not dmodel:
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,
