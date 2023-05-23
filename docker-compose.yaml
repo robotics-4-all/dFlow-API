@@ -13,8 +13,8 @@ services:
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-Dfl0w}
       # - POSTGRES_PORT=${POSTGRES_PORT:-5432}
       # - POSTGRES_DB=${POSTGRES_DB:-postgres}
-    # ports:
-    #   - 5432:5432
+      # ports:
+      # - 5432:5432
     networks:
       - dflow_net
     restart: unless-stopped
@@ -41,7 +41,7 @@ services:
     networks:
       - dflow_net
     restart: unless-stopped
-    command: ["uvicorn", "app.api.server:app", "--reload", "--workers", "1", "--host", "0.0.0.0", "--port", "8000"]
+    command: ["uvicorn", "app.api.server:app", "--workers", "8", "--host", "0.0.0.0", "--port", "8000"]
 
 networks:
   dflow_net:
