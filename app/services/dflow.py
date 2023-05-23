@@ -17,8 +17,10 @@ class DflowService:
 
     def __init__(self):
         if not os.path.exists(DflowService.TMP_DIR):
-            os.mkdir(DflowService.TMP_DIR)
-
+            try:
+                os.mkdir(DflowService.TMP_DIR)
+            except Exception:
+                pass
 
     def validate_model(self, fd):
         u_id = uuid.uuid4().hex[0:8]
