@@ -43,6 +43,20 @@ services:
     restart: unless-stopped
     command: ["uvicorn", "app.api.server:app", "--workers", "8", "--host", "0.0.0.0", "--port", "8000"]
 
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin4
+    restart: always
+    ports:
+      - "5050:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: r4a1234
+    networks:
+      - dflow_net
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
+
 networks:
   dflow_net:
     driver: bridge
@@ -50,3 +64,4 @@ networks:
 volumes:
   vol-postgres-data:
     name: postgres-data
+  pgadmin-data:
