@@ -20,4 +20,4 @@ pytest-asyncio==0.14.0
 httpx==0.16.1
 asgi-lifespan==1.0.1
 
-git+https://github.com/robotics-4-all/dFlow.git
+git+https://github.com/robotics-4-all/dFlow.git@e17527a6077a1cc24135982530de175e2a9d1682
